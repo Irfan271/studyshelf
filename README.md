@@ -604,28 +604,51 @@ Do not delete or recreate an existing database to apply an update.
 
 ## Project screenshots
 
+StudyShelf provides separate interfaces for members, moderators, and the Chief Moderator. The following screenshots demonstrate the main features available to each role. Shared staff interfaces are represented once to avoid unnecessary duplication.
 
+### 1. Member interface
 
-Screenshots of the following areas can be added here:
+| Dashboard | Explore resources |
+|---|---|
+| ![Member dashboard](assets/screenshots/user/dashboard.png) | ![Explore resources](assets/screenshots/user/explore.png) |
 
+| Notifications | Share a resource |
+|---|---|
+| ![Notifications](assets/screenshots/user/notifcation.png) | ![Share a resource](assets/screenshots/user/share_resource.png) |
 
+| Feedback | Security help |
+|---|---|
+| ![Feedback](assets/screenshots/user/feedback.png) | ![Security help](assets/screenshots/user/security_help.png) |
 
-- Member homepage and dashboard.
+### 2. Moderator interface
 
-- Explore resources.
+| Moderator analytics | Members and discipline |
+|---|---|
+| ![Moderator analytics](assets/screenshots/moderator/Analytics.png) | ![Members and discipline](assets/screenshots/moderator/Members%20%26%20discipline.png) |
 
-- Resource upload and subject selection.
+| Resource management | Security review queue |
+|---|---|
+| ![Resource management](assets/screenshots/moderator/Resource%20management.png) | ![Security review queue](assets/screenshots/moderator/Security%20review%20queue.png) |
 
-- Moderator dashboard and analytics.
+| Moderator workspace | Staff verification |
+|---|---|
+| ![Moderator workspace](assets/screenshots/moderator/workspace.png) | ![Staff verification](assets/screenshots/moderator/verification.png) |
 
-- Chief Moderator dashboard.
+| Recovery centre | Audit and security logs |
+|---|---|
+| ![Recovery centre](assets/screenshots/moderator/Recovery%20centre.png) | ![Audit and security logs](assets/screenshots/moderator/Audit%20%26%20security%20logs.png) |
 
-- Feedback and security-concern management.
+![Security and privacy concerns](assets/screenshots/moderator/Security%20%26%20privacy%20concerns.png)
 
-- Staff MFA enrolment.
+### 3. Chief Moderator interface
 
+| Chief Moderator dashboard | Moderator management |
+|---|---|
+| ![Chief Moderator dashboard](assets/screenshots/chief_moderator/Chief%20Moderator%20dashboard.png) | ![Moderator management](assets/screenshots/chief_moderator/Moderator%20management.png) |
 
+![Platform statistics and analytics](assets/screenshots/chief_moderator/Platform%20statistics%20%26%20Analytics.png)
 
+> Screenshots illustrate the role-based interfaces of StudyShelf. Repeated staff pages are intentionally omitted where functionality is shared.
 ## Project status
 
 
@@ -643,6 +666,7 @@ Features include resource moderation, role-based administration, dashboard analy
 
 
 A license has not yet been selected. All rights are reserved unless a license is added to this repository.
+
 
 
 

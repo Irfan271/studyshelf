@@ -1,0 +1,126 @@
+
+{% extends "base.html" %}
+{% block title %}Explore notes — StudyShelf{% endblock %}
+
+{% block content %}
+<section class="page-hero">
+    <div class="eyebrow">BROWSE THE COLLECTION</div>
+    <h1>A library for <em>the curious.</em></h1>
+    <p>Find clear explanations and resources shared by fellow learners.</p>
+</section>
+
+<section class="section">
+
+    <!-- Resource search and subject filter -->
+    <form class="filter-bar" method="get" action="{% url 'note_list' %}">
+        <div class="search-box">
+            <span aria-hidden="true">⌕</span>
+            <input
+                type="search"
+                name="q"
+                value="{{ query|default:'' }}"
+                placeholder="Search titles, subjects, keywords and contributors..."
+                aria-label="Search resources">
+        </div>
+
+        <select name="subject" aria-label="Filter by subject">
+            <option value="">All subjects</option>
+            {% for item in subjects %}
+                <option value="{{ item }}" {% if subject == item %}selected{% endif %}>
+                    {{ item }}
+                </option>
+            {% endfor %}
+        </select>
+
+        <button class="btn btn-dark" type="submit">
+            Search resources
+        </button>
+    </form>
+
+    <!-- Search results information -->
+    <div class="results-line">
+        <span>
+            {{ total_results }} resource{{ total_results|pluralize }} found
+        </span>
+
+        {% if query or subject %}
+            <a href="{% url 'note_list' %}">Clear filters ×</a>
+        {% endif %}
+    </div>
+
+    <!-- Resource cards -->
+    <div class="note-grid">
+        {% for note in notes %}
+            <article class="resource-card">
+                <div class="resource-meta">
+                    <span class="subject-pill">{{ note.subject }}</span>
+                    <span>{{ note.created_at|date:"M d, Y" }}</span>
+                </div>
+
+                <h3>
+                    <a href="{{ note.get_absolute_url }}">
+                        {{ note.title }}
+                    </a>
+                </h3>
+
+                <p>{{ note.description|truncatechars:135 }}</p>
+
+                <div class="resource-bottom">
+                    <span>
+                        by {{ note.owner.display_name|default:note.owner.username }}
+                    </span>
+
+                    <a href="{{ note.get_absolute_url }}">Open note ↗</a>
+                </div>
+            </article>
+
+        {% empty %}
+            <div class="empty-state">
+                {% if query or subject %}
+                    <h3>No matching resources found.</h3>
+                    <p>
+                        Try different keywords or choose another subject.
+                        You can also clear the filters to browse all resources.
+                    </p>
+
+                    <a class="btn btn-dark" href="{% url 'note_list' %}">
+                        Clear filters
+                    </a>
+                {% else %}
+                    <h3>No resources are available yet.</h3>
+                    <p>Share the first note in this collection.</p>
+
+                    <a class="btn btn-dark" href="{% url 'note_create' %}">
+                        Share a note
+                    </a>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if page_obj.paginator.num_pages > 1 %}
+        <div class="pagination">
+
+            {% if page_obj.has_previous %}
+                <a href="?q={{ query|urlencode }}&subject={{ subject|urlencode }}&page={{ page_obj.previous_page_number }}">
+                    ← Previous
+                </a>
+            {% endif %}
+
+            <span>
+                Page {{ page_obj.number }}
+                of {{ page_obj.paginator.num_pages }}
+            </span>
+
+            {% if page_obj.has_next %}
+                <a href="?q={{ query|urlencode }}&subject={{ subject|urlencode }}&page={{ page_obj.next_page_number }}">
+                    Next →
+                </a>
+            {% endif %}
+
+        </div>
+    {% endif %}
+
+</section>
+{% endblock %}

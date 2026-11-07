@@ -1,0 +1,21 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="A thoughtful home for shared study resources.">
+  <title>{% block title %}StudyShelf — Learn together{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/theme.css' %}">{% if user.is_staff %}<script src="{% static 'js/moderation.js' %}" defer></script>{% endif %}
+</head>
+<body>
+<header class="topbar"><div class="nav-wrap">
+  <a class="brand" href="{% url 'home' %}"><span class="brand-mark">S</span><span>study<span class="brand-light">shelf</span></span></a>
+  <nav class="main-nav"><a href="{% url 'note_list' %}">Explore</a>{% if user.is_authenticated %}{% if user.is_staff %}{% if user.role == "chief_moderator" %}<a href="{% url 'chief_dashboard' %}">Chief dashboard</a>{% else %}<a href="{% url 'moderator_dashboard' %}">Moderator workspace</a>{% endif %}{% else %}<a href="{% url 'dashboard' %}">Dashboard</a><a href="{% url 'note_create' %}">Share a resource</a><a href="{% url 'feedback_list' %}">Feedback</a><a href="{% url 'security_concerns' %}">Security help</a>{% endif %}<a href="{% url 'notifications' %}">Notifications {% if unread_notifications %}<span class="notify-count">{{ unread_notifications }}</span>{% endif %}</a>{% endif %}</nav>
+  <div class="nav-actions">{% if user.is_authenticated %}<a class="nav-user nav-user-profile" href="{% url 'profile' %}">{% if user.avatar %}<img src="{% url 'member_avatar' user.pk %}" class="nav-avatar" alt="">{% else %}<span class="nav-avatar-fallback">{{ user.username|first|upper }}</span>{% endif %}<span>{{ user.display_name|default:user.username }}</span></a><form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="btn btn-quiet btn-small">Log out</button></form>{% else %}<a class="btn btn-quiet btn-small" href="{% url 'login' %}">Log in</a><a class="btn btn-dark btn-small" href="{% url 'register' %}">Join free <span>↗</span></a>{% endif %}</div>
+</div></header>
+{% if messages %}<div class="messages">{% for message in messages %}<div class="message {{ message.tags }}">{{ message }}</div>{% endfor %}</div>{% endif %}
+<main>{% block content %}{% endblock %}</main>
+<footer class="footer"><div class="footer-inner"><a class="brand" href="{% url 'home' %}"><span class="brand-mark">S</span><span>studyshelf</span></a><p>Good notes travel further when we share them.</p><span>© {% now "Y" %} StudyShelf</span></div></footer>
+</body></html>

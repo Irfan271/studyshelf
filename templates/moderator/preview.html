@@ -1,0 +1,12 @@
+{% extends "moderator/base.html" %}{% block mod_title %}Secure resource preview{% endblock %}{% block moderator_content %}
+<div class="mod-panel preview-panel">
+  <div class="panel-heading"><div><div class="eyebrow">PRIVATE STAFF PREVIEW</div><h2>{{ note.title }}</h2><p>{{ note.original_filename }} · {{ note.file_size|filesizeformat }} · Uploaded by {{ note.owner.username }}</p></div><a class="btn btn-outline" href="{% url 'moderator_queue' %}">Back to review queue</a></div>
+  <div class="preview-meta"><span>Scan: <b>{{ note.scan_status|title }}</b></span><span>{{ note.scan_detail|default:"No additional scan details" }}</span><span>Status: {{ note.get_status_display }}</span></div>
+  {% if preview_message %}<div class="message error">{{ preview_message }}</div>{% endif %}
+  {% if preview_kind == "pdf" %}<iframe class="resource-preview-frame" src="{{ content_url }}" title="PDF preview"></iframe>
+  {% elif preview_kind == "image" %}<div class="image-preview-wrap"><img src="{{ content_url }}" alt="Resource image preview"></div>
+  {% elif preview_kind == "text" %}<div class="text-preview">{% for line in preview_text %}{{ line }}<br>{% empty %}No readable text was extracted.{% endfor %}</div>
+  {% elif preview_kind == "table" %}<div class="table-preview"><table class="mod-table"><tbody>{% for row in preview_rows %}<tr>{% for cell in row %}<td>{{ cell }}</td>{% endfor %}</tr>{% endfor %}</tbody></table></div>
+  {% else %}<div class="empty-state"><h3>Safe preview is unavailable for this format</h3><p>This format needs a separately configured, isolated conversion service. The original file is not automatically downloaded or executed.</p></div>{% endif %}
+  <div class="preview-actions"><form method="post" action="{% url 'moderator_approve' note.pk %}">{% csrf_token %}{% if note.scan_status == 'not_configured' %}<label><input type="checkbox" name="acknowledge_unscanned" value="yes" required> I reviewed this file although antivirus is not configured</label>{% endif %}<button class="btn btn-coral" {% if note.scan_status == 'infected' or note.scan_status == 'error' %}disabled{% endif %}>Approve resource</button></form><a class="btn btn-outline" href="{% url 'moderator_queue' %}">Return to queue</a></div>
+</div>{% endblock %}

@@ -1,0 +1,1 @@
+{% extends "base.html" %}{% block content %}<section class="section form-card"><h1>Staff verification</h1><p>Enter the current six-digit code from your authenticator app.</p><form method="post">{% csrf_token %}<input name="code" inputmode="numeric" pattern="[0-9]{6}" required><button class="btn btn-coral">Verify and continue</button></form></section>{% endblock %}

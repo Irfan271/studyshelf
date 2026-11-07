@@ -1,0 +1,275 @@
+{% extends "moderator/base.html" %}
+
+{% block mod_title %}Community feedback moderation{% endblock %}
+
+{% block moderator_content %}
+
+<div class="mod-panel">
+    <div class="panel-heading">
+        <div>
+            <h2>Member feedback and discussions</h2>
+            <p>
+                Review feedback posts and their individual replies.
+                You can respond officially, hide replies, or remove
+                individual replies without removing the parent feedback.
+            </p>
+        </div>
+    </div>
+
+    <form method="get" class="filter-bar">
+        <input
+            class="mod-input"
+            type="search"
+            name="q"
+            value="{{ query }}"
+            placeholder="Search feedback, reply text or username"
+            aria-label="Search feedback discussions"
+        >
+
+        <select name="state" aria-label="Feedback status">
+            <option value="visible" {% if state == "visible" %}selected{% endif %}>
+                Visible feedback
+            </option>
+            <option value="deleted" {% if state == "deleted" %}selected{% endif %}>
+                Removed feedback
+            </option>
+            <option value="all" {% if state == "all" %}selected{% endif %}>
+                All feedback
+            </option>
+        </select>
+
+        <button type="submit" class="btn btn-dark">
+            Search
+        </button>
+
+        {% if query or state != "visible" %}
+            <a class="btn btn-quiet" href="{% url 'moderator_feedback' %}">
+                Clear filters
+            </a>
+        {% endif %}
+    </form>
+
+    <p class="muted">
+        {{ page_obj.paginator.count }} feedback discussion{{ page_obj.paginator.count|pluralize }} found.
+    </p>
+
+    <div class="feedback-list moderator-feedback-list">
+
+        {% for item in entries %}
+
+            <article class="feedback-card moderator-discussion-card">
+
+                <div class="feedback-author">
+
+                    {% if item.member.avatar %}
+                        <img
+                            src="{% url 'member_avatar' item.member.pk %}"
+                            alt="{{ item.member.username }} avatar"
+                            class="avatar-img"
+                        >
+                    {% else %}
+                        <span class="avatar-fallback">
+                            {{ item.member.username|first|upper }}
+                        </span>
+                    {% endif %}
+
+                    <div>
+                        <b>
+                            {{ item.member.display_name|default:item.member.username }}
+                        </b>
+                        <small>
+                            @{{ item.member.username }}
+                            ·
+                            {{ item.created_at|date:"M d, Y H:i" }}
+                        </small>
+                    </div>
+
+                    <span class="feedback-rating">
+                        {{ item.rating }}/5 ★
+                    </span>
+
+                </div>
+
+                <h3>{{ item.title }}</h3>
+
+                <p>{{ item.message|linebreaksbr }}</p>
+
+                {% if item.is_deleted %}
+
+                    <div class="moderator-note">
+                        <b>Feedback removed</b>
+                        <br>
+                        <b>Removed by:</b>
+                        {{ item.deleted_by|default:"Member" }}
+                        <br>
+                        <b>Reason:</b>
+                        {{ item.deletion_reason|default:"No reason recorded" }}
+                        <br>
+                        <b>Date:</b>
+                        {{ item.deleted_at|date:"M d, Y H:i" }}
+                    </div>
+
+                {% else %}
+
+                    <form
+                        method="post"
+                        action="{% url 'moderator_delete_feedback' item.pk %}"
+                        class="mod-remove-form"
+                    >
+                        {% csrf_token %}
+
+                        <label>Removal reason</label>
+
+                        <select
+                            name="reason_choice"
+                            data-reason-select
+                            required
+                        >
+                            <option value="">Choose a reason…</option>
+
+                            {% for value, label in delete_reasons %}
+                                <option value="{{ value }}">
+                                    {{ label }}
+                                </option>
+                            {% endfor %}
+                        </select>
+
+                        <input
+                            name="custom_reason"
+                            class="mod-input"
+                            data-custom-reason
+                            hidden
+                            placeholder="Explain the other reason"
+                            maxlength="500"
+                        >
+
+                        <button
+                            type="submit"
+                            class="btn btn-danger btn-small"
+                        >
+                            Remove entire feedback
+                        </button>
+                    </form>
+
+                {% endif %}
+
+
+                <div class="moderator-discussion">
+
+                    <div class="panel-heading">
+                        <div>
+                            <h3>Discussion replies</h3>
+                            <p>
+                                Individual replies can be moderated independently.
+                            </p>
+                        </div>
+                    </div>
+
+                    {% for reply in item.replies.all %}
+
+                        {% if not reply.parent_id %}
+
+                            {% include "moderator/feedback_reply.html" with reply=reply feedback=item %}
+
+                        {% endif %}
+
+                    {% empty %}
+
+                        <p class="muted">
+                            No replies have been posted yet.
+                        </p>
+
+                    {% endfor %}
+
+                    {% if not item.is_deleted %}
+
+                        <form
+                            method="post"
+                            action="{% url 'feedback_reply_create' item.pk %}"
+                            class="feedback-reply-form moderator-official-reply"
+                        >
+                            {% csrf_token %}
+
+                            <input
+                                type="hidden"
+                                name="parent_id"
+                                value=""
+                            >
+
+                            <label>
+                                Official Moderator / Chief Moderator response
+                            </label>
+
+                            <textarea
+                                name="body"
+                                maxlength="1500"
+                                rows="3"
+                                placeholder="Write an official response to this feedback…"
+                                required
+                            ></textarea>
+
+                            <button
+                                type="submit"
+                                class="btn btn-dark btn-small"
+                            >
+                                Post official response
+                            </button>
+                        </form>
+
+                    {% endif %}
+
+                </div>
+
+            </article>
+
+        {% empty %}
+
+            <div class="empty-state">
+                <h3>No feedback discussions found.</h3>
+
+                {% if query %}
+                    <p>
+                        No discussions matched
+                        "{{ query }}".
+                        Try a different keyword or clear your filters.
+                    </p>
+                {% else %}
+                    <p>
+                        There are no feedback discussions in this category.
+                    </p>
+                {% endif %}
+            </div>
+
+        {% endfor %}
+
+    </div>
+
+
+    {% if page_obj.paginator.num_pages > 1 %}
+
+        <div class="pagination">
+
+            {% if page_obj.has_previous %}
+                <a href="?q={{ query|urlencode }}&state={{ state|urlencode }}&page={{ page_obj.previous_page_number }}">
+                    ← Previous
+                </a>
+            {% endif %}
+
+            <span>
+                Page {{ page_obj.number }}
+                of {{ page_obj.paginator.num_pages }}
+            </span>
+
+            {% if page_obj.has_next %}
+                <a href="?q={{ query|urlencode }}&state={{ state|urlencode }}&page={{ page_obj.next_page_number }}">
+                    Next →
+                </a>
+            {% endif %}
+
+        </div>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,177 @@
+{% extends "moderator/base.html" %}
+{% block mod_title %}Security review queue{% endblock %}
+
+{% block moderator_content %}
+<div class="mod-panel">
+
+    <p class="muted">
+        Pending resources are private and are not listed in the public library.
+        Review the metadata and use the secure in-browser preview.
+        Malware scan errors block approval. If ClamAV is not configured,
+        approval requires an explicit acknowledgement. Inspect CSV/spreadsheet
+        formulas before approving; a file scan does not neutralize spreadsheet
+        formula injection.
+    </p>
+
+    <form method="get" class="filter-bar">
+        <div class="search-box">
+            <span>⌕</span>
+            <input
+                type="search"
+                name="q"
+                value="{{ query }}"
+                placeholder="Search title, subject, description, filename or contributor…"
+                aria-label="Search pending resources">
+        </div>
+
+        <button class="btn btn-dark" type="submit">
+            Search queue
+        </button>
+
+        {% if query %}
+            <a class="text-link" href="{% url 'moderator_queue' %}">
+                Clear search ×
+            </a>
+        {% endif %}
+    </form>
+
+    <div class="results-line">
+        <span>
+            {{ total_results }} pending resource{{ total_results|pluralize }} found
+        </span>
+    </div>
+
+    <table class="mod-table">
+        <thead>
+            <tr>
+                <th>Resource</th>
+                <th>Contributor</th>
+                <th>File / scan</th>
+                <th>Submitted</th>
+                <th>Decision</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for n in notes %}
+                <tr>
+                    <td>
+                        <b>{{ n.title }}</b>
+                        <br>
+                        <small>{{ n.subject }}</small>
+                        <p>{{ n.description|truncatechars:130 }}</p>
+                    </td>
+
+                    <td>
+                        {{ n.owner.username }}
+                        <br>
+                        <small>{{ n.owner.email }}</small>
+                    </td>
+
+                    <td>
+                        {{ n.original_filename }}
+                        <br>
+                        <small>
+                            {{ n.file_size|filesizeformat }} · {{ n.scan_status }}
+                        </small>
+                        <br>
+                        <small>{{ n.scan_detail }}</small>
+                        <br>
+                        <a href="{% url 'moderator_file_preview' n.pk %}">
+                            Preview in browser ↗
+                        </a>
+                    </td>
+
+                    <td>
+                        {{ n.created_at|date:"M d, Y H:i" }}
+                    </td>
+
+                    <td>
+                        <div class="mod-actions">
+
+                            <form
+                                method="post"
+                                action="{% url 'moderator_approve' n.pk %}">
+                                {% csrf_token %}
+
+                                {% if n.scan_status == "not_configured" %}
+                                    <label style="font-size:10px">
+                                        <input
+                                            type="checkbox"
+                                            name="acknowledge_unscanned"
+                                            value="yes"
+                                            required>
+                                        I reviewed the unscanned file
+                                    </label>
+                                {% endif %}
+
+                                <button
+                                    class="btn btn-coral btn-small"
+                                    type="submit"
+                                    {% if n.scan_status == "infected" or n.scan_status == "error" %}
+                                        disabled
+                                    {% endif %}>
+                                    Approve
+                                </button>
+                            </form>
+
+                            <form
+                                method="post"
+                                action="{% url 'moderator_reject' n.pk %}">
+                                {% csrf_token %}
+
+                                <input
+                                    class="mod-input mod-reason"
+                                    name="reason"
+                                    maxlength="500"
+                                    placeholder="Reason required"
+                                    required>
+
+                                <button class="btn btn-outline btn-small" type="submit">
+                                    Reject
+                                </button>
+                            </form>
+
+                        </div>
+                    </td>
+                </tr>
+
+            {% empty %}
+                <tr>
+                    <td colspan="5">
+                        {% if query %}
+                            No pending resources match your search.
+                        {% else %}
+                            The review queue is empty.
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {% if page_obj.paginator.num_pages > 1 %}
+        <div class="pagination">
+
+            {% if page_obj.has_previous %}
+                <a href="?q={{ query|urlencode }}&page={{ page_obj.previous_page_number }}">
+                    ← Previous
+                </a>
+            {% endif %}
+
+            <span>
+                Page {{ page_obj.number }}
+                of {{ page_obj.paginator.num_pages }}
+            </span>
+
+            {% if page_obj.has_next %}
+                <a href="?q={{ query|urlencode }}&page={{ page_obj.next_page_number }}">
+                    Next →
+                </a>
+            {% endif %}
+
+        </div>
+    {% endif %}
+
+</div>
+{% endblock %}

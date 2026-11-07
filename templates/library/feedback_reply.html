@@ -1,0 +1,122 @@
+<div class="feedback-reply {% if reply.is_official %}is-official{% endif %}"
+     style="margin:12px 0 0 {{ depth|default:0|add:0 }}px;padding:12px;border-left:2px solid #9aa6b2;">
+
+    <div class="feedback-author">
+        {% if reply.is_official %}
+            <span class="avatar-fallback">🛡</span>
+            <div>
+                <b>StudyShelf Support Team</b>
+                <small>
+                    Official response
+                    {% if reply.staff_author %}
+                        · @{{ reply.staff_author.username }}
+                    {% endif %}
+                </small>
+            </div>
+
+        {% elif reply.author %}
+            {% if reply.author.avatar %}
+                <img
+                    src="{% url 'member_avatar' reply.author.pk %}"
+                    class="avatar-img"
+                    alt="{{ reply.author.username }} avatar">
+            {% else %}
+                <span class="avatar-fallback">
+                    {{ reply.author.username|first|upper }}
+                </span>
+            {% endif %}
+
+            <div>
+                <b>{{ reply.author.display_name|default:reply.author.username }}</b>
+                <small>@{{ reply.author.username }}</small>
+            </div>
+
+        {% else %}
+            <div>
+                <b>Former member</b>
+            </div>
+        {% endif %}
+
+        <small>{{ reply.created_at|date:"M d, Y H:i" }}</small>
+    </div>
+
+    <p>{{ reply.body|linebreaksbr }}</p>
+
+    {% if reply.author_id == user.id and reply.status == "published" %}
+        <details>
+            <summary>Edit reply</summary>
+            <form method="post" action="{% url 'feedback_reply_edit' reply.pk %}">
+                {% csrf_token %}
+                <textarea name="body" maxlength="1500" required>{{ reply.body }}</textarea>
+                <button type="submit" class="btn btn-quiet btn-small">
+                    Save edit
+                </button>
+            </form>
+        </details>
+
+        <form method="post" action="{% url 'feedback_reply_delete' reply.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="text-button">
+                Delete reply
+            </button>
+        </form>
+    {% endif %}
+
+    {% if reply.author_id != user.id and not reply.is_official %}
+        <form method="post" action="{% url 'feedback_reply_report' reply.pk %}">
+            {% csrf_token %}
+            <input
+                name="reason"
+                maxlength="500"
+                placeholder="Why are you reporting this reply?"
+                required>
+            <button type="submit" class="text-button">
+                Report
+            </button>
+        </form>
+    {% endif %}
+
+    {% if user.is_authenticated %}
+        {% if user.role == "moderator" or user.role == "chief_moderator" %}
+            <details>
+                <summary>Post official response</summary>
+                <form method="post" action="{% url 'feedback_reply_create' feedback.pk %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="parent_id" value="{{ reply.pk }}">
+                    <input type="hidden" name="is_official" value="yes">
+                    <textarea
+                        name="body"
+                        maxlength="1500"
+                        required
+                        placeholder="Write an official response…"></textarea>
+                    <button type="submit" class="btn btn-quiet btn-small">
+                        Post official response
+                    </button>
+                </form>
+            </details>
+
+        {% elif feedback.allow_replies and not feedback.replies_locked %}
+            <details>
+                <summary>Reply</summary>
+                <form method="post" action="{% url 'feedback_reply_create' feedback.pk %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="parent_id" value="{{ reply.pk }}">
+                    <textarea
+                        name="body"
+                        maxlength="1500"
+                        required
+                        placeholder="Write a reply…"></textarea>
+                    <button type="submit" class="btn btn-quiet btn-small">
+                        Post reply
+                    </button>
+                </form>
+            </details>
+        {% endif %}
+    {% endif %}
+
+    {% for child in reply.children.all %}
+        {% if child.status == "published" %}
+            {% include "library/feedback_reply.html" with reply=child feedback=feedback depth=depth|add:22 %}
+        {% endif %}
+    {% endfor %}
+</div>

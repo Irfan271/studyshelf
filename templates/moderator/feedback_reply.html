@@ -1,0 +1,161 @@
+<div class="feedback-reply moderator-feedback-reply
+    {% if reply.is_official %}is-official{% endif %}
+    status-{{ reply.status }}"
+    style="margin:12px 0 0 18px;padding:14px;border-left:3px solid #9aa6b2;">
+
+    <div class="feedback-author">
+        {% if reply.is_official %}
+            <span class="avatar-fallback">🛡</span>
+            <div>
+                <b>StudyShelf Support Team</b>
+                <small>
+                    Official response
+                    {% if reply.staff_author %}
+                        · @{{ reply.staff_author.username }}
+                    {% endif %}
+                </small>
+            </div>
+        {% elif reply.author %}
+            {% if reply.author.avatar %}
+                <img
+                    src="{% url 'member_avatar' reply.author.pk %}"
+                    class="avatar-img"
+                    alt="{{ reply.author.username }} avatar">
+            {% else %}
+                <span class="avatar-fallback">
+                    {{ reply.author.username|first|upper }}
+                </span>
+            {% endif %}
+            <div>
+                <b>{{ reply.author.display_name|default:reply.author.username }}</b>
+                <small>@{{ reply.author.username }}</small>
+            </div>
+        {% else %}
+            <span class="avatar-fallback">?</span>
+            <div>
+                <b>Former member</b>
+                <small>Original author account unavailable</small>
+            </div>
+        {% endif %}
+
+        <small>{{ reply.created_at|date:"M d, Y H:i" }}</small>
+    </div>
+
+    <div class="moderator-reply-status">
+        <span class="status-pill status-{{ reply.status }}">
+            {{ reply.get_status_display }}
+        </span>
+        {% if reply.is_official %}
+            <span class="status-pill">Official reply</span>
+        {% endif %}
+    </div>
+
+    <div class="moderator-reply-body">
+        {{ reply.body|linebreaksbr }}
+    </div>
+
+    {% if reply.status == "hidden" or reply.status == "removed" %}
+        <div class="moderator-reply-reason">
+            <b>Moderation reason:</b>
+            {{ reply.removal_reason|default:"No reason recorded." }}
+        </div>
+    {% endif %}
+
+    <div class="moderator-reply-actions">
+
+        {% if reply.status == "published" %}
+
+            <form
+                method="post"
+                action="{% url 'moderator_moderate_feedback_reply' reply.pk %}"
+                class="moderator-reply-action-form">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="hide">
+                <label for="hide-reason-{{ reply.pk }}">Reason for hiding</label>
+                <input
+                    id="hide-reason-{{ reply.pk }}"
+                    class="mod-input"
+                    type="text"
+                    name="reason"
+                    maxlength="500"
+                    placeholder="Explain why this reply should be hidden"
+                    required>
+                <button type="submit" class="btn btn-outline btn-small">
+                    Hide reply
+                </button>
+            </form>
+
+            <form
+                method="post"
+                action="{% url 'moderator_moderate_feedback_reply' reply.pk %}"
+                class="moderator-reply-action-form">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="remove">
+                <label for="remove-reason-{{ reply.pk }}">Reason for removal</label>
+                <input
+                    id="remove-reason-{{ reply.pk }}"
+                    class="mod-input"
+                    type="text"
+                    name="reason"
+                    maxlength="500"
+                    placeholder="Explain why this reply should be removed"
+                    required>
+                <button type="submit" class="btn btn-danger btn-small">
+                    Remove reply
+                </button>
+            </form>
+
+        {% elif reply.status == "hidden" %}
+
+            <form
+                method="post"
+                action="{% url 'moderator_moderate_feedback_reply' reply.pk %}">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="restore">
+                <button type="submit" class="btn btn-coral btn-small">
+                    Restore reply
+                </button>
+            </form>
+
+            <form
+                method="post"
+                action="{% url 'moderator_moderate_feedback_reply' reply.pk %}"
+                class="moderator-reply-action-form">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="remove">
+                <label for="remove-hidden-reason-{{ reply.pk }}">
+                    Reason for removal
+                </label>
+                <input
+                    id="remove-hidden-reason-{{ reply.pk }}"
+                    class="mod-input"
+                    type="text"
+                    name="reason"
+                    maxlength="500"
+                    placeholder="Explain why this reply should be removed"
+                    required>
+                <button type="submit" class="btn btn-danger btn-small">
+                    Remove reply
+                </button>
+            </form>
+
+        {% elif reply.status == "removed" %}
+
+            <p class="muted">
+                This reply has been removed. Use the Recovery Centre to restore it.
+            </p>
+            <a href="{% url 'moderator_recovery' %}" class="text-link">
+                Open Recovery Centre →
+            </a>
+
+        {% endif %}
+
+    </div>
+
+    {% with children=reply.children.all %}
+        {% for child in children %}
+            {% include "moderator/feedback_reply.html" with reply=child feedback=feedback %}
+        {% endfor %}
+    {% endwith %}
+
+</div>

@@ -1,0 +1,191 @@
+
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ heading }} — StudyShelf{% endblock %}
+
+{% block content %}
+
+<section class="form-page">
+
+    <a class="back-link" href="{% url 'dashboard' %}">
+        ← Back to my space
+    </a>
+
+    <div class="form-heading">
+        <div class="eyebrow">CONTRIBUTE TO THE LIBRARY</div>
+        <h1>{{ heading }}</h1>
+        <p>Make it easier for someone else to understand what you've learned.</p>
+    </div>
+
+    <form method="post"
+          enctype="multipart/form-data"
+          class="form-card">
+
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+            <div class="message error">
+                {% for error in form.non_field_errors %}
+                    <p>{{ error }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {% for field in form %}
+
+            {% if field.name == "subjects" %}
+
+                <div class="field subject-picker" id="subject-picker">
+
+                    <label>
+                        {{ field.label|default:"Subjects" }}
+                        <span aria-hidden="true">*</span>
+                    </label>
+
+                    <p class="subject-instructions">
+                        Select one or more subjects that describe your resource.
+                    </p>
+
+                    <!-- Selected subjects and dropdown toggle -->
+                    <div class="subject-control" id="subject-control">
+
+                        <div class="selected-subjects" id="selected-subjects">
+                            <span class="subject-placeholder" id="subject-placeholder">
+                                Select or search subjects...
+                            </span>
+                        </div>
+
+                        <button
+                            type="button"
+                            class="subject-toggle"
+                            id="subject-toggle"
+                            aria-label="Open subject selection"
+                            aria-expanded="false"
+                            aria-controls="subject-dropdown">
+
+                            <span id="subject-toggle-icon">⌄</span>
+
+                        </button>
+
+                    </div>
+
+                    <!-- Searchable subject dropdown -->
+                    <div
+                        class="subject-dropdown"
+                        id="subject-dropdown"
+                        hidden>
+
+                        <input
+                            type="search"
+                            id="subject-filter"
+                            class="subject-search"
+                            placeholder="Search subjects..."
+                            aria-label="Search available subjects"
+                            autocomplete="off">
+
+                        <div
+                            class="subject-checkbox-grid"
+                            id="subject-options"
+                            role="group"
+                            aria-label="Available subjects">
+
+                            {% for checkbox in field %}
+
+                                <label class="subject-option">
+                                    {{ checkbox.tag }}
+                                    <span>{{ checkbox.choice_label }}</span>
+                                </label>
+
+                            {% empty %}
+
+                                <p>No subject options are currently available.</p>
+
+                            {% endfor %}
+
+                        </div>
+
+                        <div
+                            class="subject-empty"
+                            id="subject-empty"
+                            hidden>
+                            No matching subjects found.
+                        </div>
+
+                    </div>
+
+                    {% if field.help_text %}
+                        <small>{{ field.help_text }}</small>
+                    {% endif %}
+
+                    {% for error in field.errors %}
+                        <small class="error">{{ error }}</small>
+                    {% endfor %}
+
+                </div>
+
+            {% elif field.name == "other_subject" %}
+
+                <div class="field"
+                     id="other-subject-field"
+                     hidden>
+
+                    <label for="{{ field.id_for_label }}">
+                        {{ field.label }}
+                    </label>
+
+                    {{ field }}
+
+                    <small>
+                        Enter your custom subject when you select Other.
+                    </small>
+
+                    {% for error in field.errors %}
+                        <small class="error">{{ error }}</small>
+                    {% endfor %}
+
+                </div>
+
+            {% else %}
+
+                <div class="field">
+
+                    <label for="{{ field.id_for_label }}">
+                        {{ field.label }}
+                    </label>
+
+                    {{ field }}
+
+                    {% if field.help_text %}
+                        <small>{{ field.help_text }}</small>
+                    {% endif %}
+
+                    {% for error in field.errors %}
+                        <small class="error">{{ error }}</small>
+                    {% endfor %}
+
+                </div>
+
+            {% endif %}
+
+        {% endfor %}
+
+        <div class="form-actions">
+
+            <button type="submit" class="btn btn-coral">
+                {{ button }} ↗
+            </button>
+
+            <a class="text-link" href="{% url 'dashboard' %}">
+                Cancel
+            </a>
+
+        </div>
+
+    </form>
+
+</section>
+
+<script src="{% static 'js/subject-picker.js' %}" defer></script>
+
+{% endblock %}

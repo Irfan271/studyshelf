@@ -1,0 +1,645 @@
+
+{% extends "moderator/base.html" %}
+{% block mod_title %}Chief Moderator dashboard{% endblock %}
+
+{% block moderator_content %}
+
+<section class="chief-dashboard">
+
+    <div class="chief-dashboard-heading">
+        <div>
+            <div class="eyebrow">PLATFORM OVERVIEW</div>
+            <h2>Chief Moderator dashboard</h2>
+            <p class="muted">
+                Monitor community growth, content quality, moderation
+                performance and platform security.
+            </p>
+        </div>
+
+        <div class="chief-dashboard-date">
+            <span>Reporting period</span>
+            <strong>Last 7 days</strong>
+        </div>
+    </div>
+
+    <div class="chief-shortcuts">
+        <a class="btn btn-coral" href="{% url 'moderator_queue' %}">Review queue</a>
+        <a class="btn btn-outline" href="{% url 'moderator_files' %}">Resources</a>
+        <a class="btn btn-outline" href="{% url 'moderator_feedback' %}">Feedback</a>
+        <a class="btn btn-outline" href="{% url 'moderator_logs' %}">Moderation logs</a>
+        <a class="btn btn-outline" href="{% url 'moderator_recovery' %}">Recovery centre</a>
+    </div>
+
+    <!-- PLATFORM STATISTICS -->
+    <section class="chief-section">
+        <div class="chief-section-heading">
+            <div>
+                <h3>Platform statistics</h3>
+                <p>Current platform totals and account activity</p>
+            </div>
+        </div>
+
+        <div class="chief-stat-grid">
+
+            <article class="chief-stat-card">
+                <span>Total members</span>
+                <strong>{{ total_members }}</strong>
+                <small>{{ active_members }} active member accounts</small>
+            </article>
+
+            <article class="chief-stat-card">
+                <span>Total resources</span>
+                <strong>{{ total_resources }}</strong>
+                <small>{{ approved_resources }} approved and public</small>
+            </article>
+
+            <article class="chief-stat-card">
+                <span>Pending resources</span>
+                <strong>{{ pending_resources }}</strong>
+                <small>Awaiting moderation</small>
+            </article>
+
+            <article class="chief-stat-card">
+                <span>Total downloads</span>
+                <strong>{{ total_downloads }}</strong>
+                <small>Recorded resource downloads</small>
+            </article>
+
+            <article class="chief-stat-card">
+                <span>Feedback posts</span>
+                <strong>{{ feedback_total }}</strong>
+                <small>Community feedback only</small>
+            </article>
+
+            <article class="chief-stat-card">
+                <span>Active warnings</span>
+                <strong>{{ warning_total }}</strong>
+                <small>Non-revoked warnings</small>
+            </article>
+
+            <article class="chief-stat-card">
+                <span>Active moderators</span>
+                <strong>{{ moderator_count }}</strong>
+                <small>{{ inactive_moderator_count }} deactivated</small>
+            </article>
+
+            <article class="chief-stat-card">
+                <span>Open security tickets</span>
+                <strong>{{ active_ticket_total }}</strong>
+                <small>Private member support</small>
+            </article>
+
+        </div>
+    </section>
+
+    <!-- RESOURCE AND COMMUNITY HEALTH -->
+    <section class="chief-section">
+        <div class="chief-section-heading">
+            <div>
+                <h3>Community and moderation health</h3>
+                <p>Additional indicators for platform oversight</p>
+            </div>
+        </div>
+
+        <div class="chief-stat-grid chief-stat-grid-secondary">
+
+            <article class="chief-stat-card">
+                <span>Inactive members</span>
+                <strong>{{ inactive_members }}</strong>
+                <small>Deactivated member accounts</small>
+            </article>
+
+            <article class="chief-stat-card">
+                <span>Rejected resources</span>
+                <strong>{{ rejected_resources }}</strong>
+                <small>Resources not approved</small>
+            </article>
+
+            <article class="chief-stat-card">
+                <span>Removed resources</span>
+                <strong>{{ removed_resources }}</strong>
+                <small>Resources removed from the platform</small>
+            </article>
+
+            <article class="chief-stat-card">
+                <span>Open content reports</span>
+                <strong>{{ open_reports_count }}</strong>
+                <small>Reports awaiting action</small>
+            </article>
+
+            <article class="chief-stat-card">
+                <span>Security concerns</span>
+                <strong>{{ open_concerns_count }}</strong>
+                <small>Open or under review</small>
+            </article>
+
+            <article class="chief-stat-card">
+                <span>Suspended members</span>
+                <strong>{{ suspended_member_total }}</strong>
+                <small>Currently suspended accounts</small>
+            </article>
+
+            <article class="chief-stat-card">
+                <span>Pending appeals</span>
+                <strong>{{ pending_appeal_total }}</strong>
+                <small>Warning challenges awaiting review</small>
+            </article>
+
+            <article class="chief-stat-card">
+                <span>Published replies</span>
+                <strong>{{ feedback_reply_total }}</strong>
+                <small>{{ hidden_reply_total }} hidden · {{ removed_reply_total }} removed</small>
+            </article>
+
+        </div>
+    </section>
+
+    <!-- ANALYTICS -->
+    <section class="chief-section">
+        <div class="chief-section-heading">
+            <div>
+                <h3>Platform analytics</h3>
+                <p>Daily activity over the last seven days</p>
+            </div>
+            <span class="chief-period-label">7-day overview</span>
+        </div>
+
+        <div class="chief-chart-grid">
+
+            <article class="chief-chart-card">
+                <div class="chief-chart-heading">
+                    <div>
+                        <span class="chief-chart-kicker">GROWTH</span>
+                        <h4>Member registrations</h4>
+                        <p>New member accounts per day</p>
+                    </div>
+                    <span class="chief-chart-icon">↗</span>
+                </div>
+
+                <div class="chief-chart-summary">
+                    <strong id="member-growth-total">—</strong>
+                    <span>registrations this week</span>
+                </div>
+
+                <div class="chief-chart-canvas">
+                    <canvas id="memberGrowthChart"></canvas>
+                </div>
+            </article>
+
+            <article class="chief-chart-card">
+                <div class="chief-chart-heading">
+                    <div>
+                        <span class="chief-chart-kicker">CONTENT</span>
+                        <h4>Submissions vs reviews</h4>
+                        <p>Daily resource activity</p>
+                    </div>
+                    <span class="chief-chart-icon">▥</span>
+                </div>
+
+                <div class="chief-chart-summary">
+                    <strong id="resource-activity-total">—</strong>
+                    <span>combined activities this week</span>
+                </div>
+
+                <div class="chief-chart-canvas">
+                    <canvas id="resourceActivityChart"></canvas>
+                </div>
+            </article>
+
+            <article class="chief-chart-card">
+                <div class="chief-chart-heading">
+                    <div>
+                        <span class="chief-chart-kicker">SECURITY</span>
+                        <h4>Security tickets</h4>
+                        <p>Daily ticket submissions</p>
+                    </div>
+                    <span class="chief-chart-icon">◇</span>
+                </div>
+
+                <div class="chief-chart-summary">
+                    <strong id="ticket-activity-total">—</strong>
+                    <span>tickets this week</span>
+                </div>
+
+                <div class="chief-chart-canvas">
+                    <canvas id="ticketActivityChart"></canvas>
+                </div>
+            </article>
+
+        </div>
+    </section>
+
+    <!-- RECENT RESOURCES -->
+    <section class="chief-section">
+        <div class="chief-section-heading">
+            <div>
+                <h3>Recently submitted resources</h3>
+                <p>Latest content added to StudyShelf</p>
+            </div>
+            <a href="{% url 'moderator_files' %}">Manage resources →</a>
+        </div>
+
+        <div class="chief-table-card">
+            <div class="mod-table-wrap">
+                <table class="mod-table">
+                    <thead>
+                        <tr>
+                            <th>Resource</th>
+                            <th>Contributor</th>
+                            <th>Status</th>
+                            <th>Submitted</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for note in recent_resources %}
+                            <tr>
+                                <td>
+                                    <strong>{{ note.title }}</strong>
+                                    <br>
+                                    <small>{{ note.subject }}</small>
+                                </td>
+                                <td>{{ note.owner.username }}</td>
+                                <td>
+                                    <span class="status-pill status-{{ note.status }}">
+                                        {{ note.get_status_display }}
+                                    </span>
+                                </td>
+                                <td>{{ note.created_at|date:"M d, Y H:i" }}</td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="4">No resources have been submitted yet.</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- MODERATOR TEAM -->
+    <section class="chief-section">
+        <div class="chief-section-heading">
+            <div>
+                <h3>Moderator team</h3>
+                <p>Accounts with Moderator privileges</p>
+            </div>
+        </div>
+
+        <div class="chief-table-card">
+            <div class="mod-table-wrap">
+                <table class="mod-table">
+                    <thead>
+                        <tr>
+                            <th>Moderator</th>
+                            <th>Email</th>
+                            <th>Account status</th>
+                            <th>Joined</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for moderator in moderators %}
+                            <tr>
+                                <td><strong>{{ moderator.username }}</strong></td>
+                                <td>{{ moderator.email|default:"—" }}</td>
+                                <td>
+                                    {% if moderator.is_active %}
+                                        <span class="status-pill status-approved">Active</span>
+                                    {% else %}
+                                        <span class="status-pill status-removed">Inactive</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ moderator.date_joined|date:"M d, Y" }}</td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="4">No moderator accounts found.</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- MODERATION HISTORY -->
+    <section class="chief-section">
+        <div class="chief-section-heading">
+            <div>
+                <h3>Recent moderation actions</h3>
+                <p>Latest decisions recorded by the moderation team</p>
+            </div>
+            <a href="{% url 'moderator_logs' %}">View all logs →</a>
+        </div>
+
+        <div class="chief-activity-card">
+            {% for action in recent_review_actions %}
+                <div class="chief-activity-item">
+                    <div class="chief-activity-marker"></div>
+                    <div class="chief-activity-content">
+                        <strong>
+                            {{ action.get_action_display|default:action.action }}
+                        </strong>
+                        <p>
+                            {% if action.admin %}
+                                By {{ action.admin.username }}
+                            {% endif %}
+                            {% if action.member %}
+                                · Member: {{ action.member.username }}
+                            {% endif %}
+                            {% if action.note %}
+                                · {{ action.note.title }}
+                            {% endif %}
+                        </p>
+                    </div>
+                    <time>{{ action.created_at|date:"M d, H:i" }}</time>
+                </div>
+            {% empty %}
+                <p class="muted">No moderation actions recorded yet.</p>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- SECURITY EVENTS -->
+    <section class="chief-section">
+        <div class="chief-section-heading">
+            <div>
+                <h3>Recent security events</h3>
+                <p>Platform security and account activity</p>
+            </div>
+        </div>
+
+        <div class="chief-activity-card">
+            {% for event in recent_events %}
+                <div class="chief-activity-item">
+                    <div class="chief-activity-marker security-marker"></div>
+                    <div class="chief-activity-content">
+                        <strong>
+                            {{ event.event }}
+                        </strong>
+                        <p>
+                            {{ event.detail|default:"No additional details recorded." }}
+                            {% if event.actor %}
+                                · Account: {{ event.actor.username }}
+                            {% endif %}
+                        </p>
+                    </div>
+                    <time>{{ event.created_at|date:"M d, H:i" }}</time>
+                </div>
+            {% empty %}
+                <p class="muted">No recent security events.</p>
+            {% endfor %}
+        </div>
+    </section>
+
+</section>
+
+{{ user_growth_series|json_script:"member-growth-data" }}
+{{ resource_series|json_script:"resource-series-data" }}
+{{ review_series|json_script:"review-series-data" }}
+{{ ticket_series|json_script:"ticket-series-data" }}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    if (typeof Chart === "undefined") {
+        return;
+    }
+
+    function readSeries(elementId) {
+        const element = document.getElementById(elementId);
+        if (!element) return [];
+
+        try {
+            const data = JSON.parse(element.textContent);
+            return Array.isArray(data) ? data : [];
+        } catch (error) {
+            console.error("Unable to read chart data:", elementId, error);
+            return [];
+        }
+    }
+
+    function normaliseSeries(data) {
+        return data.map(function (item) {
+            return {
+                label: item.label || item.date || "",
+                count: Number(item.count ?? item.total ?? 0)
+            };
+        });
+    }
+
+    const memberData = normaliseSeries(readSeries("member-growth-data"));
+    const resourceData = normaliseSeries(readSeries("resource-series-data"));
+    const reviewData = normaliseSeries(readSeries("review-series-data"));
+    const ticketData = normaliseSeries(readSeries("ticket-series-data"));
+
+    const numberFormat = new Intl.NumberFormat();
+
+    function updateTotal(elementId, values) {
+        const element = document.getElementById(elementId);
+        if (!element) return;
+
+        const total = values.reduce(function (sum, item) {
+            return sum + item.count;
+        }, 0);
+
+        element.textContent = numberFormat.format(total);
+    }
+
+    updateTotal("member-growth-total", memberData);
+    updateTotal("ticket-activity-total", ticketData);
+
+    const resourceTotal = resourceData.reduce((sum, item) => sum + item.count, 0);
+    const reviewTotal = reviewData.reduce((sum, item) => sum + item.count, 0);
+
+    document.getElementById("resource-activity-total").textContent =
+        numberFormat.format(resourceTotal + reviewTotal);
+
+    const chartDefaults = {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: {
+            mode: "index",
+            intersect: false
+        },
+        plugins: {
+            legend: {
+                display: false
+            },
+            tooltip: {
+                backgroundColor: "#14263d",
+                titleColor: "#ffffff",
+                bodyColor: "#e9eef5",
+                padding: 12,
+                cornerRadius: 9,
+                displayColors: true
+            }
+        },
+        scales: {
+            x: {
+                grid: {
+                    display: false
+                },
+                border: {
+                    display: false
+                },
+                ticks: {
+                    color: "#778397",
+                    font: {
+                        size: 11
+                    }
+                }
+            },
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    precision: 0,
+                    color: "#778397",
+                    font: {
+                        size: 11
+                    }
+                },
+                grid: {
+                    color: "rgba(120, 135, 155, 0.13)",
+                    drawTicks: false
+                },
+                border: {
+                    display: false,
+                    dash: [4, 5]
+                }
+            }
+        }
+    };
+
+    function createAreaChart(canvasId, data, label, colour) {
+        const canvas = document.getElementById(canvasId);
+        if (!canvas || !data.length) return;
+
+        const ctx = canvas.getContext("2d");
+        const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+
+        gradient.addColorStop(0, colour + "55");
+        gradient.addColorStop(1, colour + "00");
+
+        new Chart(ctx, {
+            type: "line",
+            data: {
+                labels: data.map(item => item.label),
+                datasets: [{
+                    label: label,
+                    data: data.map(item => item.count),
+                    borderColor: colour,
+                    backgroundColor: gradient,
+                    fill: true,
+                    tension: 0.38,
+                    borderWidth: 3,
+                    pointRadius: 3,
+                    pointHoverRadius: 7,
+                    pointBackgroundColor: "#ffffff",
+                    pointBorderColor: colour,
+                    pointBorderWidth: 2
+                }]
+            },
+            options: {
+                ...chartDefaults,
+                plugins: {
+                    ...chartDefaults.plugins,
+                    tooltip: {
+                        ...chartDefaults.plugins.tooltip,
+                        callbacks: {
+                            label: context =>
+                                " " + label + ": " +
+                                numberFormat.format(context.parsed.y)
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    createAreaChart(
+        "memberGrowthChart",
+        memberData,
+        "New members",
+        "#5488e8"
+    );
+
+    createAreaChart(
+        "ticketActivityChart",
+        ticketData,
+        "Security tickets",
+        "#e47c62"
+    );
+
+    const resourceCanvas = document.getElementById("resourceActivityChart");
+
+    if (resourceCanvas && resourceData.length) {
+        const reviewByLabel = new Map(
+            reviewData.map(item => [item.label, item.count])
+        );
+
+        new Chart(resourceCanvas, {
+            type: "bar",
+            data: {
+                labels: resourceData.map(item => item.label),
+                datasets: [
+                    {
+                        label: "Submissions",
+                        data: resourceData.map(item => item.count),
+                        backgroundColor: "#5488e8",
+                        borderRadius: 6,
+                        borderSkipped: false,
+                        maxBarThickness: 22
+                    },
+                    {
+                        label: "Reviews",
+                        data: resourceData.map(item =>
+                            reviewByLabel.get(item.label) || 0
+                        ),
+                        backgroundColor: "#e47c62",
+                        borderRadius: 6,
+                        borderSkipped: false,
+                        maxBarThickness: 22
+                    }
+                ]
+            },
+            options: {
+                ...chartDefaults,
+                plugins: {
+                    ...chartDefaults.plugins,
+                    legend: {
+                        display: true,
+                        position: "bottom",
+                        labels: {
+                            usePointStyle: true,
+                            pointStyle: "circle",
+                            padding: 18,
+                            color: "#687589",
+                            font: {
+                                size: 11
+                            }
+                        }
+                    },
+                    tooltip: {
+                        ...chartDefaults.plugins.tooltip
+                    }
+                },
+                scales: {
+                    ...chartDefaults.scales,
+                    x: {
+                        ...chartDefaults.scales.x,
+                        stacked: false
+                    },
+                    y: {
+                        ...chartDefaults.scales.y,
+                        stacked: false
+                    }
+                }
+            }
+        });
+    }
+});
+</script>
+
+{% endblock %}

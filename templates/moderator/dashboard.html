@@ -1,0 +1,46 @@
+{% extends "moderator/base.html" %}
+{% block mod_title %}Moderator dashboard{% endblock %}
+{% block moderator_content %}
+<section class="mod-dashboard">
+  <div class="mod-dashboard-intro"><h2>Moderator workspace</h2><p class="muted">Your moderation workload and recent platform activity.</p></div>
+  <div class="mod-dashboard-shortcuts">
+    <a class="btn btn-coral" href="{% url 'moderator_queue' %}">Review pending resources</a>
+    <a class="btn btn-outline" href="{% url 'moderator_files' %}">Resource management</a>
+    <a class="btn btn-outline" href="{% url 'moderator_feedback' %}">Feedback moderation</a>
+    <a class="btn btn-outline" href="{% url 'moderator_logs' %}">Moderation logs</a>
+    <a class="btn btn-outline" href="{% url 'moderator_recovery' %}">Recovery centre</a>
+  </div>
+  <div class="mod-dashboard-section"><div class="section-head compact"><h2>Moderation workload</h2><span class="muted">Current totals</span></div>
+    <div class="mod-stat-grid">
+      <article class="mod-stat-card"><span>Pending resources</span><strong>{{ pending_count }}</strong></article>
+      <article class="mod-stat-card"><span>Approved resources</span><strong>{{ approved_count }}</strong></article>
+      <article class="mod-stat-card"><span>Rejected resources</span><strong>{{ rejected_count }}</strong></article>
+      <article class="mod-stat-card"><span>Members</span><strong>{{ users_count }}</strong></article>
+      <article class="mod-stat-card"><span>Active warnings</span><strong>{{ warnings_count }}</strong></article>
+      <article class="mod-stat-card"><span>Suspended members</span><strong>{{ suspended_count }}</strong></article>
+      <article class="mod-stat-card"><span>Published feedback</span><strong>{{ feedback_count }}</strong></article>
+      <article class="mod-stat-card"><span>Published replies</span><strong>{{ feedback_reply_count }}</strong></article>
+      <article class="mod-stat-card"><span>Hidden replies</span><strong>{{ hidden_reply_count }}</strong></article>
+      <article class="mod-stat-card"><span>Removed replies</span><strong>{{ removed_reply_count }}</strong></article>
+      <article class="mod-stat-card"><span>Open security concerns</span><strong>{{ open_concerns_count }}</strong></article>
+      <article class="mod-stat-card"><span>Open content reports</span><strong>{{ open_reports_count }}</strong></article>
+      <article class="mod-stat-card"><span>My assigned tickets</span><strong>{{ assigned_ticket_count }}</strong></article>
+    </div>
+  </div>
+  <div class="mod-dashboard-section"><div class="section-head compact"><h2>Activity over the last seven days</h2><span class="muted">Daily totals</span></div>
+    <div class="mod-chart-grid">
+      {% for chart_title, series in chart_sets %}{% endfor %}
+      <article class="mod-panel"><h3>Resource submissions</h3><div class="mod-chart">{% for item in upload_series %}<div class="mod-chart-column"><div class="mod-chart-bar" style="height:{{ item.height }}%" title="{{ item.count }} submissions"></div><b>{{ item.count }}</b><small>{{ item.label }}</small></div>{% empty %}<p class="muted">No submission data.</p>{% endfor %}</div></article>
+      <article class="mod-panel"><h3>Moderator team reviews</h3><div class="mod-chart">{% for item in review_series %}<div class="mod-chart-column"><div class="mod-chart-bar" style="height:{{ item.height }}%" title="{{ item.count }} reviews"></div><b>{{ item.count }}</b><small>{{ item.label }}</small></div>{% empty %}<p class="muted">No review activity assigned to this account yet.</p>{% endfor %}</div></article>
+      <article class="mod-panel"><h3>Security ticket submissions</h3><div class="mod-chart">{% for item in ticket_series %}<div class="mod-chart-column"><div class="mod-chart-bar" style="height:{{ item.height }}%" title="{{ item.count }} tickets"></div><b>{{ item.count }}</b><small>{{ item.label }}</small></div>{% empty %}<p class="muted">No ticket data.</p>{% endfor %}</div></article>
+      <article class="mod-panel"><h3>My assigned ticket activity</h3><div class="mod-chart">{% for item in assigned_ticket_series %}<div class="mod-chart-column"><div class="mod-chart-bar" style="height:{{ item.height }}%" title="{{ item.count }} tickets"></div><b>{{ item.count }}</b><small>{{ item.label }}</small></div>{% empty %}<p class="muted">No assigned ticket activity.</p>{% endfor %}</div></article>
+    </div>
+  </div>
+  <div class="mod-dashboard-section"><div class="section-head compact"><h2>Recent moderation actions</h2><a href="{% url 'moderator_logs' %}">View all logs</a></div><div class="mod-panel">
+    {% for action in recent_review_actions %}<div class="chief-activity-item"><strong>{{ action.get_action_display }}</strong><p>{% if action.admin %}By {{ action.admin.username }} · {% endif %}{% if action.note %}{{ action.note.title }}{% elif action.member %}{{ action.member.username }}{% endif %}</p><small>{{ action.created_at|date:"M d, Y H:i" }}</small></div>{% empty %}<p class="muted">No moderation actions recorded.</p>{% endfor %}
+  </div></div>
+  <div class="mod-dashboard-section"><div class="section-head compact"><h2>Recent security events</h2></div><div class="mod-panel">
+    {% for event in recent_events %}<div class="chief-activity-item"><strong>{{ event.event }}</strong><p>{{ event.detail|default:"No additional details recorded." }}{% if event.actor %} · {{ event.actor.username }}{% endif %}</p><small>{{ event.created_at|date:"M d, Y H:i" }}</small></div>{% empty %}<p class="muted">No recent security events.</p>{% endfor %}
+  </div></div>
+</section>
+{% endblock %}
